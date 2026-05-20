@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocScan — ML Document Scanner</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="logo"><i class="ti ti-scan"></i> DocScan</div>
+    <span class="badge">Powered by OpenCV.js</span>
+  </header>
+
+  <main>
+    <div class="tabs" role="tablist">
+      <button class="tab active" role="tab" aria-selected="true" onclick="switchTab('camera')">
+        <i class="ti ti-camera"></i> Camera
+      </button>
+      <button class="tab" role="tab" onclick="switchTab('file')">
+        <i class="ti ti-upload"></i> Upload file
+      </button>
+      <button class="tab" role="tab" onclick="switchTab('about')">
+        <i class="ti ti-info-circle"></i> How it works
+      </button>
+    </div>
+
+    <!-- CAMERA -->
+    <section class="panel active" id="panel-camera">
+      <div class="canvas-wrap" id="camWrap">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+        <div class="cam-hint" id="camHint">Click "Start camera" to begin</div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="startBtn" onclick="startCamera()">
+          <i class="ti ti-player-play"></i> Start camera
+        </button>
+        <button class="btn" id="snapBtn" onclick="snapAndScan()" disabled>
+          <i class="ti ti-scan"></i> Scan document
+        </button>
+        <button class="btn danger" id="stopBtn" onclick="stopCamera()" disabled>
+          <i class="ti ti-player-stop"></i> Stop
+        </button>
+      </div>
+      <div class="status" id="camStatus">
+        <span class="dot" id="camDot"></span>
+        <span id="camMsg">Camera not started</span>
+      </div>
+      <div id="camResult" class="result-block hidden">
+        <p class="section-label">Scan result</p>
+        <canvas id="snapCanvas"></canvas>
+        <div class="metrics-grid" id="camMetrics"></div>
+      </div>
+    </section>
+
+    <!-- FILE -->
+    <section class="panel" id="panel-file">
+      <div class="drop-zone" id="dropZone"
+        onclick="document.getElementById('fileInput').click()"
+        ondragover="onDragOver(event)"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event)">
+        <i class="ti ti-file-upload"></i>
+        <strong>Drop an image here</strong>
+        <span>Supports JPG, PNG, WebP — or click to browse</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)" />
+      <div id="fileResult" class="result-block hidden">
+        <p class="section-label">Detected document</p>
+        <canvas id="fileCanvas"></canvas>
+        <div class="metrics-grid" id="fileMetrics"></div>
+        <button class="btn" id="downloadBtn" onclick="downloadResult()" style="margin-top:12px">
+          <i class="ti ti-download"></i> Download scan
+        </button>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="panel" id="panel-about">
+      <div class="info-cards">
+        <div class="info-card">
+          <i class="ti ti-eye" style="color:#378ADD"></i>
+          <div>
+            <h3>Edge detection</h3>
+            <p>Gaussian blur + Canny edge detection finds sharp transitions. Contour approximation (Douglas-Peucker) isolates the largest quadrilateral — your document outline.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="ti ti-transform" style="color:#1D9E75"></i>
+          <div>
+            <h3>Perspective correction</h3>
+            <p>Once four corners are found, <code>getPerspectiveTransform</code> + <code>warpPerspective</code> flattens the document to a top-down scan, just like a flatbed scanner.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="ti ti-cpu" style="color:#BA7517"></i>
+          <div>
+            <h3>OpenCV.js (WebAssembly)</h3>
+            <p>All processing runs entirely in-browser — no data leaves your device. OpenCV compiled to WASM gives near-native performance for real-time detection.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="ti ti-code" style="color:#7F77DD"></i>
+          <div>
+            <h3>Extend it</h3>
+            <p>Pair with <strong>Tesseract.js</strong> for OCR text extraction, or add a Python backend with OpenCV + YOLOv8 for multi-document detection and classification.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://docs.opencv.org/4.8.0/opencv.js" async onload="onOpenCvReady()"></script>
+  <script src="scanner.js"></script>
+</body>
+</html>
